@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Indi-Mon AI Validator</title>
+
+  <!-- TensorFlow.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+
+  <!-- MobileNet -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      margin-top: 40px;
+    }
+    img {
+      max-width: 300px;
+      margin-top: 20px;
+      border-radius: 10px;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>📸 Indi-Mon AI Validator</h2>
+
+<input type="file" id="imageUpload" accept="image/*">
+<br>
+<img id="preview" />
+<div id="result">⏳ Model loading...</div>
+
+<script>
+let model = null;
+
+// ✅ Load MobileNet safely
+async function loadModel() {
+  document.getElementById("result").innerText = "⏳ Loading AI model...";
+  model = await mobilenet.load();
+  console.log("✅ MobileNet loaded");
+  document.getElementById("result").innerText = "✅ AI Ready — Upload an image";
+}
+
+loadModel();
+
+// ✅ Image upload handler
+document.getElementById("imageUpload").addEventListener("change", async (event) => {
+
+  if (!model) {
+    document.getElementById("result").innerText = "⏳ Model still loading… wait a moment";
+    return;
+  }
+
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const img = document.getElementById("preview");
+  img.src = URL.createObjectURL(file);
+
+  img.onload = async () => {
+    try {
+      document.getElementById("result").innerText = "🔍 Analyzing image...";
+
+      const predictions = await model.classify(img);
+      console.log(predictions);
+
+      const label = predictions[0].className.toLowerCase();
+
+      // ✅ Allow keywords (structure-like)
+      const allowKeywords = [
+        "monastery",
+        "palace",
+        "castle",
+        "mosque",
+        "temple",
+        "tower",
+        "building",
+        "church"
+      ];
+
+      // ❌ Reject keywords
+      const rejectKeywords = [
+        "person",
+        "face",
+        "food",
+        "dog",
+        "cat",
+        "animal",
+        "selfie"
+      ];
+
+      let resultText = "❌ Not a monument";
+
+      // allow check
+      for (let word of allowKeywords) {
+        if (label.includes(word)) {
+          resultText = "✅ Structure detected — Upload allowed";
+        }
+      }
+
+      // reject override
+      for (let word of rejectKeywords) {
+        if (label.includes(word)) {
+          resultText = "❌ Invalid image — Not a monument";
+        }
+      }
+
+      document.getElementById("result").innerText =
+        `Prediction: ${label}\n${resultText}`;
+
+    } catch (err) {
+      console.error(err);
+      document.getElementById("result").innerText =
+        "❌ Error analyzing image — try another photo";
+    }
+  };
+});
+</script>
+
+</body>
+</html>
