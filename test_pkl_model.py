@@ -1,4 +1,5 @@
 import argparse
+from functools import lru_cache
 from pathlib import Path
 import numpy as np
 import tensorflow as tf
@@ -52,15 +53,24 @@ def load_and_preprocess(img_path):
 
 
 # ===== PREDICT FUNCTION =====
-def predict_image(img_path):
+@lru_cache(maxsize=1)
+def get_model():
+    return tf.keras.models.load_model(MODEL_PATH, compile=False)
+
+
+def classify_image(img_path):
     img_array = load_and_preprocess(img_path)
 
-    model = tf.keras.models.load_model(MODEL_PATH, compile=False)
-    predictions = model.predict(img_array, verbose=0)[0]
+    predictions = get_model().predict(img_array, verbose=0)[0]
     confidence = float(np.max(predictions))
     class_index = int(np.argmax(predictions))
     monument_name = class_names[class_index]
 
+    return monument_name, confidence
+
+
+def predict_image(img_path):
+    monument_name, confidence = classify_image(img_path)
     print("\n🔍 Prediction Result")
 
     if monument_name == "not_monument":
