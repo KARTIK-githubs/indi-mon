@@ -1,4 +1,6 @@
+import argparse
 import pickle
+from pathlib import Path
 import numpy as np
 import tensorflow as tf
 from PIL import Image
@@ -6,7 +8,7 @@ from PIL import Image
 # ===== LOAD PKL =====
 print("Loading PKL model...")
 
-with open("indimon_monument_model.pkl", "rb") as f:
+with Path(__file__).with_name("indimon_monument_model.pkl").open("rb") as f:
     data = pickle.load(f)
 
 model = data["model"]
@@ -45,7 +47,7 @@ def predict_image(img_path):
         print(f"Confidence: {confidence*100:.2f}%")
 
     elif confidence < CONF_THRESHOLD_UNKNOWN:
-        print("Result: Suspicious / Possibly AI-generated")
+        print("Result: Unknown (low classifier confidence)")
         print(f"Low confidence: {confidence*100:.2f}%")
 
     elif confidence < CONF_THRESHOLD_MONUMENT:
@@ -57,6 +59,10 @@ def predict_image(img_path):
         print(f"Confidence: {confidence*100:.2f}%")
 
 
-# ===== TAKE INPUT =====
-test_image_path = input("\nEnter image path: ").strip().strip('"')
-predict_image(test_image_path)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Classify a photo with the bundled INDIMON model.")
+    parser.add_argument("image", type=Path, help="Path to a JPEG or PNG photo")
+    args = parser.parse_args()
+    if not args.image.is_file():
+        parser.error(f"Image file not found: {args.image}")
+    predict_image(args.image)
