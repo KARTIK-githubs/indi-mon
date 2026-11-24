@@ -1,3 +1,5 @@
+> **Browser demo.** After installing `requirements.txt`, run `python web.py` and open `http://127.0.0.1:5000/`. This upload interface runs the bundled monument model on your machine.
+
 > **Run a prediction.** Use Python 3.11, install `python -m pip install -r requirements.txt`, then run `python test_pkl_model.py /path/to/photo.jpg` from the repository root. The command loads the bundled HDF5 model. Low confidence indicates an unknown result.
 
 # INDIMON
