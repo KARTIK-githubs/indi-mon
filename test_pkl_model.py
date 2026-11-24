@@ -1,21 +1,41 @@
 import argparse
-import pickle
 from pathlib import Path
 import numpy as np
 import tensorflow as tf
 from PIL import Image
 
-# ===== LOAD PKL =====
-print("Loading PKL model...")
+MODEL_PATH = Path(__file__).with_name("indimon_monument_model.h5")
+IMG_SIZE = (224, 224)
 
-with Path(__file__).with_name("indimon_monument_model.pkl").open("rb") as f:
-    data = pickle.load(f)
+# Class order stored with the original model export.
+class_names = (
+    "Ajanta Caves",
+    "Charar-E- Sharif",
+    "Chhota_Imambara",
+    "Ellora Caves",
+    "Fatehpur Sikri",
+    "Gateway of India",
+    "Humayun_s Tomb",
+    "India gate pics",
+    "Khajuraho",
+    "Sun Temple Konark",
+    "alai_darwaza",
+    "alai_minar",
+    "basilica_of_bom_jesus",
+    "charminar",
+    "golden temple",
+    "hawa mahal pics",
+    "iron_pillar",
+    "jamali_kamali_tomb",
+    "lotus_temple",
+    "mysore_palace",
+    "not_monument",
+    "qutub_minar",
+    "tajmahal",
+    "tanjavur temple",
+    "victoria memorial",
+)
 
-model = data["model"]
-class_names = data["class_names"]
-IMG_SIZE = data["img_size"]
-
-print("✅ Classes loaded:", len(class_names))
 
 # ===== THRESHOLDS =====
 CONF_THRESHOLD_MONUMENT = 0.75
@@ -35,6 +55,7 @@ def load_and_preprocess(img_path):
 def predict_image(img_path):
     img_array = load_and_preprocess(img_path)
 
+    model = tf.keras.models.load_model(MODEL_PATH, compile=False)
     predictions = model.predict(img_array, verbose=0)[0]
     confidence = float(np.max(predictions))
     class_index = int(np.argmax(predictions))
