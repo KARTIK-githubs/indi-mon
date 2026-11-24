@@ -1,3 +1,5 @@
+> **Run a prediction.** Use Python 3.11, install `python -m pip install -r requirements.txt`, then run `python test_pkl_model.py /path/to/photo.jpg` from the repository root. The command loads the model bundled with the repository. Use the bundled pickle from a trusted checkout. Low confidence indicates an unknown result.
+
 # INDIMON
 
 A team project for classifying images of Indian monuments. The repository includes TensorFlow training and inference scripts, saved model artifacts and a static web demo.
